@@ -1,0 +1,86 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{listings}
+\usepackage{caption}
+\usepackage[a4paper, margin=1in]{geometry} 
+\setlength{\parskip}{1em}
+\usepackage{float}
+\usepackage{hyperref}
+
+
+
+\title{Introducción a Packet Tracer \\ Redes I}
+\author{Giovani Bavera \\ giovani.bavera@gmail.com}
+\date{August 23, 2024}
+
+\begin{document}
+
+\maketitle
+
+\section{Packet Tracer}
+
+El programa de simulación permite agregar dispositivos, tanto "Network Devices" (routers, switches, hubs, etc) como "End Devices" (PC, Laptops, Printers, etc) para poder interconectarlos entre ellos con diferentes tipos de cables y hacer las correspondientes pruebas. 
+
+En la barra superior azul tiene dos modos de vista, modo "Logical" y "Physical". El primero muestra como están conectados los dispositivos y como fluye la información a través de la red. Por el otro lado, "Physical" muestra como esta configurado el cableado de los dispositivos reales, es decir, es una representación de como se vería todo los aparatos conectados en una habitación con las PCs, Switches, Hubs, etc, a los respectivos puertos físicos. 
+
+En la otra barra azul, también se ven dos modos referidos a como se ejecutan la simulación. El modo "Realtime" tal como dice su nombre es el tiempo real en la red mientras suceden las cosas al contrario de "Simulation" que permite controlar el tiempo, añadir paquetes y verlos viajar por la red. 
+
+Por ultimo, esta el "Scenario Box" donde se pueden crear paquetes en la red para viajar por los diferentes dispositivos y verlos a lo largo del tiempo. 
+
+\subsection{Dispositivos Finales}
+
+Los dispositivos finales (End Devices) son aquellos que se conectan a los Network Devices para recibir el intercambio de información de otros dispositivos finales. Algunos de ellos son:
+
+\begin{itemize}
+  \item PCs
+  \item Laptops
+  \item Printers (impresoras)
+  \item Servers
+\end{itemize}
+
+La gran mayoría de estos permiten modificar el tipo de conexión que soportan, cambiando la placa de red para que se comunique por medio de ethernet, fibra óptica o incluso de forma inalámbrica (en el caso especial de los servidores, permite agregar dos placas al mismo tiempo, siempre que estas no sean del mismo tipo). Adicionalmente se pueden agregar micrófono o auricular al dispositivo si es que lo permite. 
+
+Otra característica, es la posibilidad de poder acceder a la consola o el explorador de la computadora/laptop/server para interactuar con la red, a excepción obviamente de las impresoras.
+
+\subsection{Dispositivos de Red}
+
+Los dispositivos de red disponible en el programa son los: routers, switches y hubs.
+
+\textbf{ROUTERS} - Poseen sistemas operativo desde versiones viejas como la 12 hasta las mas modernas.  Casi la totalidad de los mismos da la posibilidad de personalización de los puertos físicos, permitiendo ethernet, fibra, serial, conector de consola e incluso para telefonía. 
+
+\textbf{SWITCHES} - Poseen sistema operativo desde la versión 12.1 hasta las mas modernas 16. Parte de los switches permiten la modificación de las tarjetas de ampliación para aceptar ethernet o fibra óptica. La otra parte, no permiten las modificaciones de las tarjetas. 
+
+\textbf{HUBS} - No poseen sistema operativo. Permiten la modificación de sus puertos. Tienen tarjetas de ampliación de ethernet o fibra óptica. Podría decirse que son mas básicos que los switches. 
+
+\subsection{Cableado}
+Existen distintos cables para el conexionado dependiendo del uso. Los disponibles dentro del simulador son: 
+
+\textbf{Cable de Control:} Cable propietario. Todos los dispositivos que son administrables se puede controlar por medio de una consola de una computadora por este cable.
+
+\textbf{Cable USB:} Permite hacer lo mismo que el de control. 
+
+\textbf{Cable Straight-Through:} sirven para conectar dos dispositivos distintos como Router-PC.
+
+\textbf{Cable Cross-Over:} se utilizan para conectar dos dispositivos del mismo tipo, por ejemplo, PC-PC.
+
+\textbf{Cable Fiber:} conecta dos dispositivos que soportan fibra. 
+
+\textbf{Cable Phone:} conecta dos dispositivos que soportan linea telefónica. 
+
+\subsection{Actividad Practica}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.4\linewidth]{tres computadoras.png}
+    \caption{}
+    \label{fig:enter-label}
+\end{figure}
+
+Teniendo dos PC conectadas por medio de una conexión cruzada, no es posible conectar directamente una tercera computadora a estas dos. Para poder realizar dicha conexión, se necesita de los dispositivos de redes, como un switch o un hub que permiten la comunicacion entre mas de 2 dispositivos ya que son capaces de administrarlo. 
+
+\section{Referencias}
+
+\textbf{Github:} \url{https://github.com/GioBavera/redes1.git}
+\end{document}

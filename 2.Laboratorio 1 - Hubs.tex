@@ -1,0 +1,91 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{listings}
+\usepackage{caption}
+\usepackage[a4paper, margin=1in]{geometry} 
+\setlength{\parskip}{1em}
+\usepackage{float}
+\usepackage{hyperref}
+\usepackage{booktabs} % Opcional: para mejorar la estética de las tablas
+\renewcommand{\thesection}{\arabic{section}.}
+
+
+\title{Laboratorio 1 - Hubs \\ Redes I}
+\author{Giovani Bavera \\ giovani.bavera@gmail.com}
+\date{August 30, 2024}
+
+\begin{document}
+
+\maketitle
+
+\section{Conexión de dos dispositivos}
+
+En los casos de las PCs se pueden ver que las IPs terminan en numero bajos:
+
+\begin{itemize}
+    \item PC1 -- 192.168.0.1
+    \item PC2 -- 192.168.0.2
+\end{itemize}
+
+Mientras que, en el caso del servidor, el numero de su IP termina en un numero mayor: 
+
+\begin{itemize}
+    \item Server -- 192.168.0.100
+\end{itemize}
+
+Podemos notar que los servidores, al ser dispositivos que están constantemente encendidos, requieren de una IP estática y segura, para eso se le asigna una de mayor terminación porque son direcciones menos propensas a cambios o utilización de otro dispositivo. Las IPs de las PCs, así como la de otros dispositivos finales, al encenderse y apagarse utilizan una IP dinámica y de menor terminación siendo que pueden tomar las direcciones lógicas entre ellas. 
+En cuanto a las direcciones físicas (MACs), cada dispositivo posee una propia que fue asignada por el fabricante de la NIC.
+
+\section{Conexión de dos dispositivos}
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{|c|c|c|}
+        \hline
+        \textbf{Dispositivo} & \textbf{IP} & \textbf{MAC} \\
+        \hline
+        PC1 & 192.168.0.3 & 255.255.255.0 \\
+        \hline
+        PC2 & 192.168.0.1 & 255.255.255.0 \\
+        \hline
+        PC3 & 192.168.0.4 & 255.255.255.0 \\
+        \hline
+        Server & 192.168.0.100 & 255.255.255.0 \\
+        \hline
+    \end{tabular}
+    \caption{Tabla de dispositivos con sus direcciones IP y MAC}
+    \label{tab:devices}
+\end{table}
+
+En esta tabla se observa las direcciones físicas y lógicas de los distintos dispositivos. Como las PCs están configuradas en DHCP, las IPs van a ser asignadas dinámicamente. Es decir, una PC puede tomar la IP de otra si se apaga ya que pasa a estar disponible y cuando vuelva a encenderse la otra tomar una IP que este disponible. 
+En este caso que tenemos un HUB, para ver las direcciones lógicas de cada End Device tendremos que acceder manualmente a cada consola. Si hubo una comunicación previa de un dispositivo a todos los demas, es posible ver las direcciones con el comando \textit{arp -a}. 
+
+\section{Dominios de colisión}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.35\linewidth]{1HUB-4ED.png}
+    \caption{}
+    \label{fig:enter-label}
+\end{figure}
+
+Teniendo la situación de un Hub con 4 dispositivos (figure 1) se produce una colisión cuando mas de un mensaje tienen una coincidencia temporal, provocando una falla de comunicación
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{3hubs.png}
+    \caption{}
+    \label{fig:enter-label}
+\end{figure}           
+
+Mismo caso en el de la figura 2. La colisión tarde o temprano se va a producir en un único HUB (sea el 0,1 o 2) cuando los mensajes de diferentes dispositivos se encuentren provocando el fallo. Posteriores mensajes enviados van a fallar consecuentemente. 
+
+Esto se puede evitar al editar el tiempo de salida de los mensajes, introduciendo un retraso de salida para que no haya un "choque" entre ellos y pueda funcionar todo normalmente. O un algoritmo que ayude en estos fallos. 
+
+
+\section{Referencias}
+
+\textbf{Github:} \url{https://github.com/GioBavera/redes1.git}
+\end{document}

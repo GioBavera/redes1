@@ -1,0 +1,68 @@
+\documentclass{article}
+\usepackage[a4paper, margin=1in]{geometry}
+\usepackage[utf8]{inputenc}
+\renewcommand{\thesection}{\arabic{section}.} %Agrega el . en secciones
+\usepackage{caption} %Mejora las leyendas de tablas
+\setlength{\parskip}{1em} %Espacio parrafos
+\usepackage{hyperref} %Enlaces
+
+
+
+\title{Laboratorio 2 - Switches \\ Redes I}
+\author{Giovani Bavera \\ giovani.bavera@gmail.com}
+\date{Septiembre 5, 2024}
+
+\begin{document}
+
+\maketitle
+
+\section{Dispositivos activos}
+
+Se puede deducir que el switch, a diferencia del hub, no retransmite el mensaje entrante a todos sus puertos, sino que envía únicamente a aquel donde esta el destino del paquete. Además, tiene la capacidad de entender el paquete y en base a eso enviarlo a su destino, no simplemente retransmitirlo sin análisis como ocurre en algo mas básico como el hub.  
+
+Tras la practica, se puede concluir que los switches no tienen un UNICO dominio de colisión, sino que poseen un dominio de colisión por cada puerto del switch. Esto es un gran avance respecto al hub ya que pueden enviarse distintos paquetes al mismo tiempo desde distintos puertos sin que haya una colisión y produciendo un error en el paquete. (También evita poner pequeños delay para evitar los problemas naturales del hub).
+
+\section{El protocolo ARP}
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{|c|c|}
+\hline
+\textbf{Dispositivo} & \textbf{Dirección MAC} \\ \hline\hline
+    PC11 & 0004.9AED.E15B \\ \hline
+    PC12 & 000D.BD96.B915 \\ \hline
+    PC13 & 0010.114D.79D9 \\ \hline
+    PRINTER1 & 0001.6394.A11E \\ \hline
+    PC21 & 0001.96DA.9132 \\ \hline
+    SERVER1 & 00E0.F9A9.3157 \\ \hline
+    SERVER2 & 0000.0C11.2106 \\ \hline
+    PRINTER2 & 00D0.FFED.0B5A \\ \hline
+\end{tabular}
+\caption{Tabla de dispositivos y sus direcciones MAC}
+\end{table}
+
+Los switches en las difusiones juegan el papel central. Es el encargado de preguntar las MACs de los demás y guardarlas internamente en una tabla (por medio de switch learning) para poder utilizarlas a futuro en transmisión de los paquetes entre distintos dispositivos por sus puertos. 
+En este caso, el switch recibe un ping y pregunta a todos cual es la dirección IPs porque no la sabe previamente. Esto lo hace por medio de una difusión (broadcast) y aquella que tiene esa ip contesta la solicitud al switch, comunicando finalmente al dispositivo fuente. 
+
+Para colocar entradas estáticas en Linux es:
+
+
+\begin{quote}
+\texttt{sudo arp -s <IP> <MAC>}
+\end{quote}
+
+Mientras que en Windows es:
+
+\begin{quote}
+\texttt{arp -s <IP> <MAC>}
+\end{quote}
+
+Como ventaja de usar esto podría ser que en redes pequeñas trae una mejora de rendimiento ya que los dispositivos no tienen que resolver continuamente las direcciones MAC de las IPs. 
+
+Como desventaja se vuelve complicado configurar y mantener cuando las redes son muy grandes. También, al ser asignadas manualmente por un humano, puede dar lugar a errores lo que lleva a problemas de conexión. 
+
+
+\section{Referencias}
+
+\textbf{Github:} \url{https://github.com/GioBavera/redes1.git}
+\end{document}

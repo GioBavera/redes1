@@ -1,0 +1,103 @@
+\documentclass{article}
+\usepackage[a4paper, margin=1in]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage{caption} %Mejora las leyendas de tablas
+\setlength{\parskip}{1em} %Espacio parrafos
+\usepackage{graphicx}
+\usepackage[hidelinks]{hyperref}
+
+
+\title{Laboratorio 3 - Switches Administrables \\ Redes I}
+\author{Giovani Bavera \\ giovani.bavera@gmail.com}
+\date{Septiembre 20, 2024}
+
+\begin{document}
+
+\maketitle
+
+\section{Spanning Tree Protocol}
+
+Lo que ocurre en este escenario es que el mensaje PDU simple que se envía desde la PC1 a la PC2 pasa por los switches de la siguiente forma: $Switch0 >> Switch2 >> Switch1$, es decir, no toma el camino mas corto que seria evitando el 2. Esto ocurre porque el puesto del 1 esta bloqueado. 
+
+Cuando hay tantos switches, en este protocolo, hay uno llamado "Switch Root" que sirve de referencia. Todos los demás switches de la red calculan sus caminos más eficientes hacia el switch root para evitar bucles. Para determinar el switch root se hace por medio de un una combinación de
+tres numeros: el Bridge Priority Number, el System ID Extension y la MAC Address mas pequena. De los cuales quedaria asi: 
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+\textbf{Switch} & \textbf{Bridge Priority} & \textbf{System ID Extension} & \textbf{MAC} & \textbf{BID} \\
+\hline
+SW0 & 32768 & 1 & 000A.F30D.B9EE & 32769:00:0A:F3:0D:B9:EE \\
+\hline
+SW1 & 32768 & 1 & 0090.2B6C.AD29 & 32769:00:90:2B:6C:AD:29 \\
+\hline
+SW2 & 32768 & 1 & 0001.C7E4.67A1 & 32769:00:01:C7:E4:67:A1 \\
+\hline
+\end{tabular}
+\caption{Tabla de switches con sus respectivos BID}
+\end{table}
+
+Viendo el BID de cada uno de los switches, el que queda como root es el switch2 debido a que es el numero mas bajo de los 3. 
+
+Al apagar la interface 0/2, el switch2 no tiene mas conexión con el 1, pero aun así sigue siendo el root. Ahora, cuando se desactiva su otra interface (0/1) el switch queda sin ninguna conexión y deja de ser el root. En ese caso, el siguiente root es el switch0 ya que su BID es menor al 1.
+
+Esta prioridad para asignar root se puede modificar manualmente con el comando \textit{spanning-tree vlan 1 priority x}, aumentando del valor predeterminado (32768) al máximo (61440). 
+
+Finalmente se modifico la prioridad del BID del switch0 para que sea root. ¿Por que? Porque organiza la red de forma mas eficiente, tomando los recorridos mas cortos y evitando bucles. 
+
+\subsection{Tormenta de Broadcast}
+
+Al desactivar el spanning-tree de todos los switches se puede observar que los mensajes llegan a destino pero no vuelven. Esto se debe a que comienza a haber un bucle donde se repite el mismo mensaje una y otra vez. Esto se confirma cuando hacemos un ping entre las dos computadoras. El tiempo de espera se agota porque el paquete esta en un bucle infinito. 
+
+\section{Virtual LANs}
+
+Inicialmente, todos los dispositivos están configurados en la misma vlan (vlan 1). Posteriormente, desde el switch config, se puede seleccionar un rango y asignarlo a una virtual LAN. Curiosamente tambien se les pueden asignar nombres a estas vlans creadas.
+
+El \textsc{switchport mode access}, configura estas interfaces en modo de acceso, lo que significa que solo aceptarán tráfico de una VLAN. Mientras, \textsc{switchport access} hace que cualquier dispositivo conectado a estos puertos se integrará a esa VLAN y solo podrá comunicarse con otros dispositivos en la misma VLAN
+
+\subsection{VLAN con mas de un switch}
+En este nuevo caso de dos switches, estos dos se conectan por dos cables. Cada uno corresponde a una red virtual distinta, por lo tanto, para cada vlan tenemos que tener un cable. Esto conlleva a problemas cuando tenemos mas vlans ya que cada nueva red necesita de un cable mas para conectar a los dos switches. 
+
+\subsection{Port Trunking}
+Para evitar todos los problemas de tener muchos cables para cada vlan, existe el Port Truking donde se taggean los paquetes y no hace falta tener varios varias conexión. Se puede utilizar un único cable por el port gigaEthernet. Con el comando \textsc{show interface gigabitEthernet 0/1 switchport} podemos obtener la siguiente informacion:
+
+\begin{itemize}
+    \item \textbf{Administrative Mode:} modo de operación del puerto según la configuración administrativa.
+        \begin{itemize}
+                \item \textbf{Access:} Solo pertenecerá a una VLAN.
+                \item \textbf{Trunk:} Permite el tráfico de múltiples VLANs.
+                \item \textbf{Dynamic Auto:} Negocia automáticamente el modo trunk si el otro extremo también está configurado para permitirlo.
+                \item \textbf{Dynamic Desirable:} Intenta negociar el modo trunk si el otro extremo también está dispuesto a configurarlo.
+        \end{itemize}
+    \item  \textbf{Operational Mode:} Este valor refleja el modo de operación actual del puerto. Mismos modos que el anterior.
+    \item  \textbf{Administrative Trunking Encapsulation:} Indica el método de encapsulación configurado para los puertos trunk.
+        \begin{itemize}
+                \item \textbf{Dot1q:} Encapsulación IEEE 802.1Q, que agrega un encabezado de 4 bytes para identificar las VLANs.
+                \item \textbf{ISL:} Método propietario de Cisco para el etiquetado de VLANs (aunque está en desuso).
+        \end{itemize}
+    \item  \textbf{Trunking VLANs Enabled:} Muestra las VLANs que están permitidas en el trunk
+        \begin{itemize}
+                    \item \textbf{All:} Todas las VLANs están permitidas en el trunk.
+                    \item \textbf{VLANs List:} Un rango específico de VLANs o una lista de VLANs permitidas en el trunk.
+        \end{itemize}
+\end{itemize}
+
+\section{Port Agregation}
+
+Este modo nos permite agregar redundancia a la velocidad ya tenida en la port trunking asi como tambien ampliar la cantidad de datos transportados al haber mas cables. 
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.3\linewidth]{port_agregation.png}
+    \caption{Port Agregation}
+    \label{fig:enter-label}
+\end{figure}
+
+\section{Referencias}
+\begin{tabular}{ll}
+Port Trunking  & \url{https://www.practicalnetworking.net/stand-alone/configuring-vlans/} \\
+Github         & \url{https://github.com/GioBavera/redes1.git} \\
+\end{tabular}
+
+\end{document}

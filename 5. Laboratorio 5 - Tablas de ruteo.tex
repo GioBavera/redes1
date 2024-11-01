@@ -1,0 +1,78 @@
+\documentclass{article}
+\usepackage[a4paper, margin=1in]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage{caption} %Mejora las leyendas de tablas
+\setlength{\parskip}{1em} %Espacio parrafos
+\usepackage{graphicx}
+\usepackage[hidelinks]{hyperref}
+\setlength{\parindent}{15pt} % Define la sangría de todos los párrafos
+
+
+\title{Introduccion a Routing \\ Redes I}
+\author{Giovani Bavera \\ giovani.bavera@gmail.com}
+\date{Octubre 31, 2024}
+
+\begin{document}
+
+\maketitle
+
+\section{Configuración de Host}
+Inicialmente le asignamos las IPs a cada computadora. PC0 al pertenecer a la red 192.168.0.0/24 se le asigna la 192.168.0.2, mientras PC1 al pertenecer a la red 192.168.1.0/24 se le asigna la 192.168.0.2. Ambos con la mascara de red 255.255.255.0. Complementariamente, se le asigna una IPs a cada extremo de del router debido a que esta en dos redes distintas al mismo tiempo (192.168.0.1 y 192.168.1.1). 
+
+\begin{figure} [h]
+    \centering
+    \includegraphics[width=0.8\linewidth]{primerEscenario.png}
+    \label{fig:enter-label}
+\end{figure}
+
+Tras configurar esto, se puede observar que el ping no sale de la computadora. Esto se debe a que la computadora no puede alcanzar IPs que no estén dentro del rango de 192.168.0.1 - 192.168.0.254. Por lo tanto, se prueba de expandir el rango de IPs que puede alcanzar con una mascara menor de 23 bits. Nuevamente falla, intenta pasar por el router sin éxito debido a que este sigue viendo que son dos subredes separadas. 
+
+Finalmente lo que se hace es definir en ambas PCs la \textit{default gateway} IP del router (distinta dirección en cada red, evidentemente). Lo que esto permite es que el encargado de enviar un paquete de una red a otra distinta sea el router, es decir, los hosts de la red le delegan el trabajo de remitir el mensaje al router cuando este en otra red el destino. Esto es posible debido a que los router poseen la característica de \textit{forwarding}, dicha característica actúa a la hora de recibir el paquete, lee la dirección de destino y lo reenvía a la misma. Para hacer eso se apoya en una tabla de enrutamiento que le permite tomar la ruta mas eficiente. 
+
+\section{Configuración de Host}
+
+\begin{figure} [h]
+    \centering
+    \includegraphics[width=0.8\linewidth]{segundoEscenario.png}
+    \label{fig:enter-label}
+\end{figure}
+En un escenario mas complejo, con 4 redes distintas y 2 routers, ademas de configurar lo que se hizo previamente en cada red, también debe configurarse la conexión serial entre los dos routers. Se le estableció una velocidad de 4Mbps así como también se definieron las IPs de esta red serial (192.168.5.1 y 192.168.5.2, router1 y router0 respectivamente). 
+
+Una vez configurado todo esto, nos encontramos ante la siguiente situación: los hosts (PCs) de las redes entre un mismo router si pueden comunicarse normalmente pero no así sucede con las que debe atravesarse la conexión serial. Por ejemplo, si quiero hacer un ping entre la PC0 y la PC3 no se puede, pero si con la PC1. Para poder solucionar esto se hace un ruteo estático, donde se debe agregar a la tabla de ruteo por donde se debe redirigir cuando se reciba un mensaje con la dirección de las redes ajenas al router. Para esto se utiliza el comando:
+
+\texttt{ip route \textless IP de la red deseada\textgreater \ \textless máscara\textgreater \ \textless IP del otro extremo de la serial\textgreater}
+
+Las comandos desde el \texttt{router0}:
+
+\texttt{ip route 192.168.2.0 255.255.255.0 192.168.5.1}
+
+\texttt{ip route 192.168.3.0 255.255.255.0 192.168.5.1}
+
+Las comandos desde el \texttt{router1}:
+
+\texttt{ip route 192.168.0.0 255.255.255.0 192.168.5.2}
+
+\texttt{ip route 192.168.1.0 255.255.255.0 192.168.5.2}
+
+Esto puede resumirse (sumarize) en un mismo router. Sumarize consiste en un unico bloque que va de un valor a otro, limitado por una mascara. En resumen, quedaria de la siguiente forma:
+
+Router0: \texttt{ip route 192.168.2.0 255.255.254.0 192.168.5.1}
+
+Router1: \texttt{ip route 192.168.0.0 255.255.254.0 192.168.5.2}
+
+Debido a que cada router tiene unicamente una salida principal, puede utilizarse el concepto de \textit{default gateway}. Todo el trafico desconocido seria reenviado directamente al otro router. En el caso del router0: \texttt{ip route 0.0.0.0 0.0.0.0 192.168.5.1} y, en el caso del router1: \texttt{ip route 0.0.0.0 0.0.0.0 192.168.5.2}
+
+\begin{figure} [h]
+    \centering
+    \includegraphics[width=0.55\linewidth]{tercerEscenario.png}
+    \label{fig:enter-label}
+\end{figure}
+
+Si agrego un tercer router que este conectado al router1, deja de tener sentido las \textit{default gateways}. Seguir con este método da a lugar a distribuir un paquete a una red equivocada y por consiguiente problemas. Es mejor utilizar enrutamiento manual para evitar problemas ya que le proporciona mayor informacion a donde reenviar la información. 
+
+\section{Referencias}
+\begin{tabular}{ll}
+Github         & \url{https://github.com/GioBavera/redes1.git} \\
+\end{tabular}
+
+\end{document}

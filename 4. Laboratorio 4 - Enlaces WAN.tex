@@ -1,0 +1,117 @@
+\documentclass{article}
+\usepackage[a4paper, margin=1in]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage{caption} %Mejora las leyendas de tablas
+\setlength{\parskip}{1em} %Espacio parrafos
+\usepackage{graphicx}
+\usepackage[hidelinks]{hyperref}
+\usepackage{verbatim}
+\usepackage{float}    % Para usar el modificador [H]
+
+
+\title{Laboratorio 4 - Enlaces WAN \\ Redes I}
+\author{Giovani Bavera \\ giovani.bavera@gmail.com}
+\date{Septiembre 20, 2024}
+
+\begin{document}
+
+\maketitle
+
+\section{Protocolo HDLC}
+
+Para configurar cada uno de los extremos se deben ingresar los siguientes comandos (primero en R0):
+\begin{verbatim}
+> en
+# configure terminal 
+# interface Serial10/1/0 
+# ip address 192.168.10.6 255.255.255.252
+# encapsulation hdlc
+# no shutdown
+\end{verbatim}
+
+
+Lo mismo debe hacerse desde el lado del R1 con la ip correspondiente (192.168.10.6).
+
+Los router trabajan de forma sincronica, con una señal de clock determinada por uno de sus extremos, el DCE (en este caso es el R1). El otro extremo es el DTE (R0). Desde el router DCE se puede terminar el clock rate con el comando:
+\begin{verbatim}
+# clock rate 250000
+\end{verbatim}
+
+\subsection{Trama de cHDLC}
+
+El ping realizado entre dos routers R0 y R1, observamos que el campo address tiene los valores 0x8f o 0x0f, indicando si es multicast o unicast. 
+Las tramas multicast transportan mensaje SLARP (Serial Line Address Resolution Protocol ) y las unicast los mensajes ICMP (ping).
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{imagen.png}
+    \label{fig:enter-label}
+\end{figure}
+
+Tipos de mensajes SLARP:
+\begin{itemize}
+    \item Request: Se envía para solicitar información de configuración, como la dirección IP.
+    \item Keepalive: Usado para mantener la conectividad entre las interfaces y confirmar que el enlace está activo.
+    \item Keepalive: Usado para mantener la conectividad entre las interfaces y confirmar que el enlace está activo.
+\end{itemize}
+
+Secuencia de los mensajes SLARP:
+\begin{enumerate}
+    \item SLARP Request: Un router envía un mensaje de solicitud al otro extremo del enlace para obtener información de configuración.
+    \item SLARP Reply: El router remoto responde con la información solicitada.
+    \item Keepalive: Una vez establecido el enlace, los routers intercambian mensajes de keepalive periódicos para garantizar que el enlace permanece activo.
+\end{enumerate}
+
+Timing de los mensajes SLARP:
+\begin{itemize}
+    \item SLARP Requests: Se envían al inicio de la comunicación cuando una interfaz serial se activa.
+    \item SLARP Keepalive: Se envían de manera periódica para verificar la conectividad del enlace. Por defecto, este intervalo es de 10 segundos en interfaces HDLC, pero puede variar según la configuración.
+\end{itemize}
+
+El valor de protocolo para SLARP en el campo de protocolo del encabezado HDLC es 0x2142..
+
+Secuencia de los mensajes unicast: los mensajes unicast se transmiten en una secuencia que depende del flujo de datos entre los routers. A diferencia de SLARP, que sigue una lógica específica para el establecimiento de enlaces y mantenimiento, los mensajes unicast se transmiten de acuerdo con el tráfico generado por las aplicaciones o protocolos de capa superior.
+
+
+\section{Protocolo PPP}
+A diferencia de HDLC, PPP es de formato libre, utilizado por otros fabricantes. La configuracion es la siguiente para R0:
+
+\begin{verbatim}
+> en
+# configure terminal 
+# interface Serial10/1/0 
+# ip address 192.168.10.6 255.255.255.252
+# encapsulation ppp
+# no shutdown
+\end{verbatim}
+
+Lo mismo debe hacerse desde el lado del R1 con la ip correspondiente (192.168.10.6).
+
+Por ultimo, se agregara autenticación PAP. Para esto, se ingresan los siguientes comandos en el R0:
+
+\begin{verbatim}
+> en
+# configure terminal 
+# username R1 password cisco
+# ppp authentication pap
+# ppp pap sent-username R0 password cisco0
+# no shutdown
+\end{verbatim}
+
+En el caso de R1: 
+
+\begin{verbatim}
+> en
+# configure terminal 
+# username R0 password cisco
+# ppp authentication pap
+# ppp pap sent-username R1 password cisco0
+# no shutdown
+\end{verbatim}
+
+\section{Referencias}
+\begin{tabular}{ll}
+Github         & \url{https://github.com/GioBavera/redes1.git} \\
+\end{tabular}
+
+\end{document}

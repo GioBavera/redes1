@@ -1,0 +1,106 @@
+\documentclass{article}
+\usepackage[a4paper, margin=1in]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage{caption} %Mejora las leyendas de tablas
+\setlength{\parskip}{1em} %Espacio parrafos
+\usepackage{graphicx}
+\usepackage[hidelinks]{hyperref}
+\usepackage{verbatim}
+\usepackage{float}    % Para usar el modificador [H]
+
+
+\title{Laboratorio 8 - Ruteo interdominio \\ Redes I}
+\author{Giovani Bavera \\ giovani.bavera@gmail.com}
+\date{Noviembre 22, 2024}
+
+\begin{document}
+
+\maketitle
+
+\section{Protocolo BGP}
+\subsection{BGP peering}
+
+Un concepto esencial de BGP es establecer la vecindad o peering. Los vecinos BGP establecen una sesión en capa 4 para comunicarse. Esto quiere decir que el alcance entre ellos debe estar resuelto
+previamente por cualquier otro protocolo de capa anterior.
+
+Para poder ver esto en acción, primero vamos a realizar un caso básico: 
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{imagen.png}
+    \caption{Caso base de prueba}
+    \label{fig:enter-label}
+\end{figure}
+
+Una vez hecho el bosquejo, hay que configurar cada uno de los routers. 
+
+Desde R1: 
+
+\begin{verbatim}
+> enable
+# configure terminal
+# interface g0/0/0
+# ip address 193.10.11.1 255.255.255.252
+# no shutdown
+# exit
+\end{verbatim}
+
+Desde R2: 
+
+\begin{verbatim}
+> enable
+# configure terminal
+# interface g0/0/0
+# ip address 193.10.11.2 255.255.255.252
+# no shutdown
+# exit
+\end{verbatim}
+
+Una vez configurado lo básico, procedemos a configurar el protocolo BGP. En R1: 
+
+\begin{verbatim}
+> enable
+# configure terminal
+# router bgp 195
+# neighbor 193.10.11.2 remote-as 200
+# exit
+\end{verbatim}
+
+En R2
+
+\begin{verbatim}
+> enable
+# configure terminal
+# router bgp 200
+# neighbor 193.10.11.1 remote-as 195
+# exit
+\end{verbatim}
+
+Viendo los comandos, router bgp establece el ASN local y neighbor la vecindad con el ASN remoto o vecino. Podemos ver el estado del peering con el comando \texttt{show ip bgp summary} y \texttt{show ip bgp neighbors}.
+
+\subsection{BGP annoucement}
+
+BGP no anuncia las rutas por si sola, por lo tanto, hay que indicarle de alguna manera como hacerlo. Para esto, vamos a configurar el loopback en R1. Un \textbf{loopback} es una interfaz lógica o virtual en un dispositivo de red, que no está asociada físicamente a ningún puerto. Los comandos son los siguientes:
+
+\begin{verbatim}
+> enable
+# configure terminal
+# interface loopback 2
+# ip address 195.11.14.1 255.255.255.0
+\end{verbatim}
+
+Como bien se dice en el trabajo, de R2 a 195.11.14.1, las solicitudes llegan pero las respuestas no. Esto sucede porque R2 no sabe como debe regresar el trafico al loopback de R1, ya que la red 195.11.14.0/24 solo esta en la tabla de enrutamiento de R2. Para solucionar esto, en R2 configurar un anuncio de red que cubra el trafico de retorno. Comandos en R2: 
+
+\begin{verbatim}
+# interface loopback 2
+# ip address 200.11.14.1 255.255.255.0
+\end{verbatim}
+
+Configurado esto, el router conoce la ruta necesaria para el regreso de trafico.
+
+\section{Referencias}
+\begin{tabular}{ll}
+Github         & \url{https://github.com/GioBavera/redes1.git} \\
+\end{tabular}
+
+\end{document}

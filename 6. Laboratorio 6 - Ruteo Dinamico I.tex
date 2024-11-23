@@ -1,0 +1,109 @@
+\documentclass{article}
+\usepackage[a4paper, margin=1in]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage{caption} %Mejora las leyendas de tablas
+\setlength{\parskip}{1em} %Espacio parrafos
+\usepackage{graphicx}
+\usepackage[hidelinks]{hyperref}
+\usepackage{verbatim}
+\usepackage{float}    % Para usar el modificador [H]
+
+
+\title{Laboratorio 6 - Ruteo Dinamico I \\ Redes I}
+\author{Giovani Bavera \\ giovani.bavera@gmail.com}
+\date{Noviembre 22, 2024}
+
+\begin{document}
+
+\maketitle
+\section{Ruteo Dinámico}
+
+A diferencia del anterior método de ruteo, ruteo estático, donde el usuario debía ingresar manualmente las redes que queria relacionar, el ruteo dinámico se encarga de hacerlo por su cuenta. Los routers intercambien información entre si y aprendan de alguna u otra forma la topología subyacente. Esta comunicación está gobernada por protocolos conocidos como ROUTING PROTOCOLS (los mismos se usan para generar automáticamente las tablas de ruteo).
+
+Cuando estos protocolos se utilizan dentro de una área llamada AS (Autonomous system), se dice que el ruteo ocurre dentro de dicho dominio y a los mismos se los denomina IGP (Interior Gateway Protocol). Los IGP se clasifican en dos grandes familias o categorías:
+\begin{enumerate}
+    \item LINK STATE o estado enlace (OSPF)
+    \item VECTOR DISTANCE o vector distancia (RIPv2)
+\end{enumerate}
+
+\section{Protocolo RIPv2}
+
+El protocolo RIP permite, a medida que avanza el tiempo, que los routers vayan conociendo como llegar a otras redes.
+
+Inicialmente, vemos que el escenario no se puede hacer ping entre las distintas computadora. Esto se debe a que los router no tienen ningún método de ruteo establecido, lo cual no permite enviar mensajes a otras redes porque no las conoce, no sabe como llegar. 
+
+La solución a esto es utilizar un protocolo de ruteo, como lo es en este caso RIPv2. Se deben ingresar los siguientes comandos:
+
+\begin{verbatim}
+> en
+# configure terminal 
+# router rip
+# version 2
+# network 100.1.0.0
+# exit
+# exit
+# write file     
+\end{verbatim}
+Estos mismos comandos deben ingresarse en cada uno de los routers. Cisco no permite en su programa (o no provee facilidad) para poder hacerlo mas cómodo con una anotación del estilo 100.1.0.1/16. Afortunadamente, en este caso al ser redes de clase A, se facilita y no es necesario añadir todas las direcciones de las redes que el router desea acceder.
+
+Una vez realizado esto, hacemos un ping o enviamos un PDU entre computadoras y podemos chequear que los paquetes llegan, indicando un correcto funcionamiento. 
+
+Si se llega a caer una trama, por ejemplo la s0/1/0 que conecta al R1 con el R4, vemos que después de un tiempo (puede varias desde 30 seg a 2 horas, en casos reales) los routers encuentran otro camino por otra de las ramas. En este caso, R1 deriva para R1-R3. Si enviamos un paquete desde R1 a R4, se observa que el paquete pasa por R3 para finalmente llegar a R4.  
+
+\section{ISP}
+El router 5 cumple simbólicamente la función de nuestro ISP. Primeramente debemos conectarlo al R4 con un ruta estatica. Para esto introducimos los siguientes comandos:
+
+\begin{verbatim}
+    En ISP:
+    
+> en
+# configure terminal 
+# host ISP
+# interface loopback0
+# ip address 1.1.1.1 255.255.255.255
+# interface s0/0/1
+# ip address 100.2.0.2 255.255.255.252
+# ip route 100.1.0.0 255.255.248.0 100.2.0.1
+
+    En R4: 
+    
+> en
+# configure terminal 
+# ip route 0.0.0.0 0.0.0.0 100.2.0.2 
+# interface s0/0/1 
+# ip add 100.2.0.1 255.255.255.252
+\end{verbatim}
+
+Una vez hecha toda la configuración correspondiente, si vemos una de las tablas de los routers veremos lo siguiente: 
+
+\begin{verbatim}
+    Router2#show ip route
+Codes: L - local, C - connected, S - static, R - RIP, M - mobile, B - BGP
+       D - EIGRP, EX - EIGRP external, O - OSPF, IA - OSPF inter area
+       N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2
+       E1 - OSPF external type 1, E2 - OSPF external type 2, E - EGP
+       i - IS-IS, L1 - IS-IS level-1, L2 - IS-IS level-2, ia - IS-IS inter area
+       * - candidate default, U - per-user static route, o - ODR
+       P - periodic downloaded static route
+
+Gateway of last resort is 100.1.0.6 to network 0.0.0.0
+
+     100.0.0.0/8 is variably subnetted, 13 subnets, 3 masks
+C       100.1.0.0/30 is directly connected, Serial0/1/0
+    ...
+R       100.1.3.0/24 [120/1] via 100.1.0.6, 00:00:20, Serial0/1/1
+R       100.1.4.0/24 [120/2] via 100.1.0.6, 00:00:20, Serial0/1/1
+                     [120/2] via 100.1.0.1, 00:00:22, Serial0/1/0
+R       100.2.0.0/30 [120/2] via 100.1.0.6, 00:00:20, Serial0/1/1
+                     [120/2] via 100.1.0.1, 00:00:22, Serial0/1/0
+R*   0.0.0.0/0 [120/2] via 100.1.0.6, 00:00:20, Serial0/1/1
+               [120/2] via 100.1.0.1, 00:00:22, Serial0/1/0
+\end{verbatim}
+Donde a lo ultimo se puede observar como llegar al ISP.
+
+\section{Referencias}
+\begin{tabular}{ll}
+Github         & \url{https://github.com/GioBavera/redes1.git} \\
+\end{tabular}
+
+\end{document}

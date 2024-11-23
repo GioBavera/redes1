@@ -1,0 +1,92 @@
+\documentclass{article}
+\usepackage[a4paper, margin=1in]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage{caption} %Mejora las leyendas de tablas
+\setlength{\parskip}{1em} %Espacio parrafos
+\usepackage{graphicx}
+\usepackage[hidelinks]{hyperref}
+\usepackage{verbatim}
+\usepackage{float}    % Para usar el modificador [H]
+
+
+\title{Laboratorio 6 - Ruteo Dinamico I \\ Redes I}
+\author{Giovani Bavera \\ giovani.bavera@gmail.com}
+\date{Noviembre 23, 2024}
+
+\begin{document}
+
+\maketitle
+\section{OSPF}
+
+Como ejemplo de protocolo link state veremos los aspectos escenciales de OSPF. Los routers que implementan OSPF cuentan con una base de datos llamada LSDB (Link State DataBase) que describe toda la topologia completa de la red. Cada router genera su propia LSDB a partir a de los anuncios LSA (Link State Advertisement) que recibe de los demás routers y de los que él mismo genera. Los LSA son paquetes de información que contienen rutas con sus costos y los hay de distintos tipos.
+
+Para poder ver esto tenemos el siguiente escenario: 
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.65\linewidth]{imagen.png}
+\end{figure}
+
+Cuando no utilizamos multiárea en OSPF (como en este caso) es obligatorio definir la red dentro de un área default llamada simplemente área 0. En cada uno de los router deben ingresarse los siguientes comandos:
+
+\begin{verbatim}
+> en
+# configure terminal
+# router ospf 1
+# router-id 1.1.1.1
+# network 100.0.0.0 0.0.7.255 area 0    
+\end{verbatim}
+
+Podriamos ingresar con el comando network cada una de las redes al router, lo cual es mas tedioso que simplemente poner una red con su respectiva mascara que cuente a todas. 
+
+Lo único que se modifica de uno a otro es el router-id, que puede tomar cualquier valor. Este valor determina el ID del router en cuestión, siendo opcional su asignación. Adicionalmente con los comandos \texttt{show ip ospf neightbor} se puede ver los vecinos de ese router y \texttt{show ip ospf datebase} todos los neighbor del área.
+
+\section{Tipos de redes OSPF}
+
+En OSPF no todas las redes son tratadas iguales, existen tres tipos distintos: point-to-point, broadcast y non-broadcast. Todos los enlaces en el escenario son ptp, a excepción del punto J que seria broadcast. 
+
+Las redes broadcast se comportan distinto a las redes Point-to-Point. Si elegimos a un router del segmento para que todas las demás formen adyacencias hacia él, a este router se lo denomina DR (Designated Router) y es elegido durante la inicializan de OSPF. Como dicho router constituye un claro punto de fallo, adicionalmente también se designa otro router, llamado BDR o Backup del mismo segmento que puede sustituirlo durante un fallo.
+Es muy importante entender que un mismo router pueder ser DR en más de un segmento o la función que le toque, pues dicha función es relativa al segmento donde está conectado  representado en definitiva por la interface de conexión a dicho segmento. Esta informacion puede obtenerse con mucho detalle cuando se revisa cada una de las interfaces.
+
+Con el comando \texttt{show ip ospf interface $ <trama> $} desde cada uno de los router podemos ver quien es el router Designated Router (BR) y el Backup Designated Router (BDR) de la trama. Como en este escenario la única trama broadcast es la J, determinamos de ahí:
+
+\begin{itemize}
+	\item Designated Router (BR) es R4.
+	\item Backup Designated Router (BDR) es R1.
+	\item Drother es el R5.
+\end{itemize}
+
+\section{LSDB de OSPF}
+LSDB no es mas que la base de datos de cada uno de los router que contiene la topología de la red para poder enviar los paquetes. Esta la aprende mediante el intercambio de LSA. Esta puede ser vista con el siguiente comando \texttt{\#show ip ospf database}. La salida se compone de tres secciones: 
+
+\begin{itemize}
+    \item \textbf{Router Link States:} descripción de todos los routers conectados con sus ID.
+    \item \textbf{Net Link States:} segmentos (el Link ID es la IP del DR cada segmento).
+    \item \textbf{AS External Link States:} redes que conectamos directamente 100.3.0.0/30 que no pertenecen al área OSPF.
+\end{itemize}  
+
+\section{La tabla de routing OSPF}
+Usando la LSDB cada router independientemente ejecuta el algoritmo SPF de Dijkstra en busca de los caminos más cortos hacia los demás routers. Dichos caminos están constituidos por las redes de paso y routers que atraviesa.
+
+En consonancia con la información de la LSDB vemos que hay tres tipos de rutas (\texttt{\#show ip route}): network,
+router y external. Todas tienen por cada entrada una letra: N (network) o R (router) y una o más
+direcciones IP de próximo salto (hop) indicado después de la palabra vía. Las entradas tipo N son
+conceptualmente similares a otras rutas vistas, y representan rutas a redes que participan de OSPF
+(directamente conectadas o no) y rutas externas. Pero las entradas con R refieren como destino
+routers.    
+
+Otra cuestión es el número indicado entre [ ] que representa el costo de la ruta. Todas las interfaces
+de r1 tienen costo 10. Estos costos pueden cambiarse con el siguiente comando:
+
+\begin{verbatim}
+    # interface eth2
+    # ospf cost 15
+\end{verbatim}
+
+\section{Referencias}
+\begin{tabular}{ll}
+Github         & \url{https://github.com/GioBavera/redes1.git} \\
+\end{tabular}
+
+\end{document}
+
